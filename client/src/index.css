@@ -1,0 +1,33 @@
+@import "tailwindcss";
+
+@theme {
+  --font-display: "DM Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Crimson Pro", ui-serif, Georgia, serif;
+  --color-void: #05040a;
+  --color-ink: #0c0a12;
+  --color-card: #100c18;
+  --color-line: #2a2240;
+  --color-mist: #c4bdd6;
+  --color-muted: #7a7394;
+  --color-gold: #d4a853;
+  --color-aurora: #7c5cff;
+  --color-moss: #2fd4a3;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-display);
+  background: var(--color-void);
+  color: #e8e4f2;
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: color-mix(in oklab, var(--color-gold) 35%, transparent);
+}
