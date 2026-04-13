@@ -106,7 +106,61 @@ export function ensureDefaultProfile() {
     })
     return
   }
-  if (!s.activeProfileId && s.profiles[0]) s.setActiveProfileId(s.profiles[0].id)
+  const activeOk =
+    s.activeProfileId != null && s.profiles.some((p) => p.id === s.activeProfileId)
+  if (!activeOk && s.profiles[0]) s.setActiveProfileId(s.profiles[0].id)
+}
+
+/** Pierwsze uruchomienie / pusta historia — przykładowe wątki pod aktywny profil. */
+export function ensureStarterConversations() {
+  const s = useAppStore.getState()
+  if (s.conversations.length > 0) return
+  const pid = s.activeProfileId ?? s.profiles[0]?.id
+  if (!pid) return
+
+  const day = s.dayAnalysisDate
+  const now = new Date().toISOString()
+  const assistant = (body: string) =>
+    `${body}\n\nKontekst analizy dnia: ${day}.`
+
+  const c1: Conversation = {
+    id: newId(),
+    profileId: pid,
+    title: 'Wprowadzenie — jak działa doradca',
+    analysisMode: 'quick',
+    messages: [
+      {
+        id: newId(),
+        role: 'assistant',
+        content: assistant(
+          'Witaj w AstroGuide. Wątki są powiązane z profilem: model może korzystać z historii, materiałów (wykresy, tabele) i kontekstu dnia. Wybierz **Szybkie omówienie** lub **Głęboką analizę** u dołu czatu.',
+        ),
+        createdAt: now,
+      },
+    ],
+    updatedAt: now,
+  }
+  const c2: Conversation = {
+    id: newId(),
+    profileId: pid,
+    title: 'Przykład: głębsza warstwa',
+    analysisMode: 'deep',
+    messages: [
+      {
+        id: newId(),
+        role: 'assistant',
+        content: assistant(
+          '(Głęboka analiza) Tu pojawią się dłuższe syntezy z RAG po historii profilu oraz po wielowymiarowych danych (astrologia, numerologia, tarot itd.). Zadaj pierwsze pytanie poniżej.',
+        ),
+        createdAt: now,
+      },
+    ],
+    updatedAt: now,
+  }
+
+  useAppStore.setState((st) => ({
+    conversations: [c2, c1, ...st.conversations],
+  }))
 }
 
 export const useAppStore = create<AppState>()(

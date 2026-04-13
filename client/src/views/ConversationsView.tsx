@@ -38,9 +38,21 @@ export function ConversationsView() {
       </div>
 
       {!profileId ? (
-        <p className="mt-6 text-sm text-zinc-500">Wybierz profil.</p>
+        <p className="mt-6 text-sm text-zinc-500">Wybierz profil (górna karta w panelu bocznym).</p>
       ) : list.length === 0 ? (
-        <p className="mt-6 text-sm text-zinc-500">Brak rozmów — utwórz pierwszą.</p>
+        <div className="mt-8 rounded-2xl border border-white/[0.08] bg-white/[0.03] p-6 text-center">
+          <p className="font-serif text-lg text-white">Nie masz jeszcze wątków</p>
+          <p className="mt-2 text-sm leading-relaxed text-zinc-500">
+            Rozmowy są zapisywane per profil. Utwórz pierwszą — przejdziesz od razu do czatu.
+          </p>
+          <button
+            type="button"
+            onClick={startNew}
+            className="mt-5 w-full max-w-xs rounded-xl bg-gradient-to-r from-[#7c5cff] to-[#d4a853] py-3 text-sm font-bold text-[#0c0a12]"
+          >
+            Rozpocznij rozmowę
+          </button>
+        </div>
       ) : (
         <ul className="mt-6 space-y-2">
           {list.map((c) => (

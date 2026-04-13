@@ -11,7 +11,11 @@ import { DayAnalysisView } from './views/DayAnalysisView'
 import { ConversationsView } from './views/ConversationsView'
 import { MaterialsView } from './views/MaterialsView'
 import { ChatView } from './views/ChatView'
-import { ensureDefaultProfile, useAppStore } from './store/appStore'
+import {
+  ensureDefaultProfile,
+  ensureStarterConversations,
+  useAppStore,
+} from './store/appStore'
 
 export default function App() {
   const mainTab = useAppStore((s) => s.mainTab)
@@ -27,9 +31,13 @@ export default function App() {
   const [journalOpen, setJournalOpen] = useState(false)
 
   useEffect(() => {
-    ensureDefaultProfile()
-    const done = useAppStore.persist.onFinishHydration(() => {
+    const run = () => {
       ensureDefaultProfile()
+      ensureStarterConversations()
+    }
+    run()
+    const done = useAppStore.persist.onFinishHydration(() => {
+      run()
     })
     return done
   }, [])
