@@ -65,7 +65,7 @@ export function AdminLlmModal({ open, onClose }: Props) {
                   <button
                     type="button"
                     role="switch"
-                    aria-checked={active}
+                    aria-checked={active ? 'true' : 'false'}
                     aria-label={active ? `Wyłącz ${row.title}` : `Uaktywnij ${row.title}`}
                     onClick={() => toggleActive(row.id, active)}
                     className={clsx(
