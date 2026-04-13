@@ -6,6 +6,7 @@ type Props = { open: boolean; onClose: () => void }
 
 export function NewProfileModal({ open, onClose }: Props) {
   const addProfile = useAppStore((s) => s.addProfile)
+  const runDeepBaselineAnalysis = useAppStore((s) => s.runDeepBaselineAnalysis)
   const [name, setName] = useState('')
   const [birthDate, setBirthDate] = useState('')
   const [birthTime, setBirthTime] = useState('')
@@ -13,7 +14,13 @@ export function NewProfileModal({ open, onClose }: Props) {
 
   const submit = () => {
     const n = name.trim() || 'Nowy profil'
-    addProfile({ name: n, birthDate: birthDate || undefined, birthTime: birthTime || undefined, birthPlace: birthPlace || undefined })
+    const id = addProfile({
+      name: n,
+      birthDate: birthDate || undefined,
+      birthTime: birthTime || undefined,
+      birthPlace: birthPlace || undefined,
+    })
+    runDeepBaselineAnalysis(id)
     setName('')
     setBirthDate('')
     setBirthTime('')
@@ -61,7 +68,8 @@ export function NewProfileModal({ open, onClose }: Props) {
           />
         </label>
         <p className="text-[11px] leading-relaxed text-zinc-500">
-          Profil jest kontekstem dla modelu: historia, embeddingi i materiały są rozdzielane per profil.
+          Po utworzeniu profilu uruchamiana jest pełna analiza bazowa — wyniki zapisujemy jako materiały
+          JSON i Markdown (baza wiedzy dla czatu).
         </p>
         <button
           type="button"

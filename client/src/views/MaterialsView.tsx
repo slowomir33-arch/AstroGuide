@@ -1,4 +1,19 @@
-import { useAppStore } from '../store/appStore'
+import { useAppStore, type MaterialKind } from '../store/appStore'
+
+function kindLabel(kind: MaterialKind): string {
+  switch (kind) {
+    case 'baseline_json':
+      return 'Baza wiedzy (JSON)'
+    case 'baseline_md':
+      return 'Baza wiedzy (Markdown)'
+    case 'chart':
+      return 'Wykres'
+    case 'table':
+      return 'Tabela'
+    default:
+      return 'Inne'
+  }
+}
 
 function downloadMaterial(title: string, mime: string, content: string) {
   const ext = mime.includes('svg') ? 'svg' : mime.includes('json') ? 'json' : 'txt'
@@ -65,7 +80,7 @@ export function MaterialsView() {
               <div className="min-w-0">
                 <div className="truncate font-medium text-white">{m.title}</div>
                 <div className="text-xs text-zinc-500">
-                  {m.kind} · {new Date(m.createdAt).toLocaleString('pl-PL')}
+                  {kindLabel(m.kind)} · {new Date(m.createdAt).toLocaleString('pl-PL')}
                 </div>
               </div>
               <div className="flex shrink-0 gap-2">

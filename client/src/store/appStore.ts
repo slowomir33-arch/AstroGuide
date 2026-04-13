@@ -1,5 +1,8 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
+import { buildBaselineDocuments } from '../lib/baseline'
+import { buildJournalMarkdown } from '../lib/journalAi'
+import { isSameDay, parseISO } from 'date-fns'
 
 export type AnalysisMode = 'quick' | 'deep'
 
@@ -11,6 +14,8 @@ export type Profile = {
   birthPlace?: string
   avatarDataUrl?: string
   createdAt: string
+  /** Po zakończeniu „pełnej głębokiej analizy” i zapisie materiałów bazowych */
+  baselineCompletedAt?: string
 }
 
 export type Message = {
@@ -29,7 +34,7 @@ export type Conversation = {
   updatedAt: string
 }
 
-export type MaterialKind = 'chart' | 'table' | 'other'
+export type MaterialKind = 'chart' | 'table' | 'other' | 'baseline_json' | 'baseline_md'
 
 export type Material = {
   id: string
@@ -42,6 +47,17 @@ export type Material = {
   createdAt: string
 }
 
+/** Wpis dziennika generowany przez AI (esencja dnia + kontekst użytkownika) */
+export type JournalEntry = {
+  id: string
+  profileId: string
+  date: string
+  title: string
+  markdown: string
+  createdAt: string
+  updatedAt: string
+}
+
 export type PlanTier = 'Orbit' | 'Nebula' | 'Cosmos'
 
 export type Account = {
@@ -51,7 +67,7 @@ export type Account = {
   avatarDataUrl?: string
 }
 
-export type MainTab = 'day' | 'conversations' | 'materials' | 'chat'
+export type MainTab = 'day' | 'conversations' | 'materials'
 
 type AppState = {
   sidebarCollapsed: boolean
@@ -63,6 +79,7 @@ type AppState = {
   profiles: Profile[]
   conversations: Conversation[]
   materials: Material[]
+  journalEntries: JournalEntry[]
   sessionActive: boolean
 
   setSidebarCollapsed: (v: boolean) => void
@@ -75,9 +92,11 @@ type AppState = {
   logout: () => void
   loginDemo: () => void
 
-  addProfile: (p: Omit<Profile, 'id' | 'createdAt'>) => void
+  addProfile: (p: Omit<Profile, 'id' | 'createdAt' | 'baselineCompletedAt'>) => string
   updateProfile: (id: string, p: Partial<Profile>) => void
   removeProfile: (id: string) => void
+
+  runDeepBaselineAnalysis: (profileId: string) => void
 
   addConversation: (c: Omit<Conversation, 'id' | 'updatedAt' | 'messages'> & { messages?: Message[] }) => string
   updateConversation: (id: string, p: Partial<Conversation>) => void
@@ -85,6 +104,8 @@ type AppState = {
 
   addMaterial: (m: Omit<Material, 'id' | 'createdAt'>) => string
   removeMaterial: (id: string) => void
+
+  generateJournalEntryForDay: (profileId: string, date: string) => void
 }
 
 const newId = () => crypto.randomUUID()
@@ -98,12 +119,13 @@ const seedAccount: Account = {
 export function ensureDefaultProfile() {
   const s = useAppStore.getState()
   if (s.profiles.length === 0) {
-    s.addProfile({
+    const id = s.addProfile({
       name: 'Profil główny',
       birthDate: '1983-02-19',
       birthTime: '10:53',
       birthPlace: 'Sosnowiec',
     })
+    s.runDeepBaselineAnalysis(id)
     return
   }
   const activeOk =
@@ -111,7 +133,19 @@ export function ensureDefaultProfile() {
   if (!activeOk && s.profiles[0]) s.setActiveProfileId(s.profiles[0].id)
 }
 
-/** Pierwsze uruchomienie / pusta historia — przykładowe wątki pod aktywny profil. */
+/** Dla profili bez materiałów bazowych (np. migracja z starej wersji). */
+export function ensureBaselineMaterials() {
+  const s = useAppStore.getState()
+  for (const p of s.profiles) {
+    const has = s.materials.some(
+      (m) =>
+        m.profileId === p.id &&
+        (m.kind === 'baseline_json' || m.kind === 'baseline_md'),
+    )
+    if (!has) s.runDeepBaselineAnalysis(p.id)
+  }
+}
+
 export function ensureStarterConversations() {
   const s = useAppStore.getState()
   if (s.conversations.length > 0) return
@@ -133,7 +167,7 @@ export function ensureStarterConversations() {
         id: newId(),
         role: 'assistant',
         content: assistant(
-          'Witaj w AstroGuide. Wątki są powiązane z profilem: model może korzystać z historii, materiałów (wykresy, tabele) i kontekstu dnia. Wybierz **Szybkie omówienie** lub **Głęboką analizę** u dołu czatu.',
+          'Witaj w AstroGuide. Odpowiadam w kontekście **Twojej bazy wiedzy** (materiały JSON/MD z profilu). Zapytaj np. o horoskop na dziś, tranzyty albo numerologię — tak jak w zwykłym czacie z AI.',
         ),
         createdAt: now,
       },
@@ -150,7 +184,7 @@ export function ensureStarterConversations() {
         id: newId(),
         role: 'assistant',
         content: assistant(
-          '(Głęboka analiza) Tu pojawią się dłuższe syntezy z RAG po historii profilu oraz po wielowymiarowych danych (astrologia, numerologia, tarot itd.). Zadaj pierwsze pytanie poniżej.',
+          '(Głęboka analiza) Tu pojawią się dłuższe syntezy z RAG po historii profilu i materiałach wielowymiarowych. Zadaj pierwsze pytanie w konwersacjach.',
         ),
         createdAt: now,
       },
@@ -163,9 +197,15 @@ export function ensureStarterConversations() {
   }))
 }
 
+export function runInitialHydration() {
+  ensureDefaultProfile()
+  ensureBaselineMaterials()
+  ensureStarterConversations()
+}
+
 export const useAppStore = create<AppState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       sidebarCollapsed: false,
       mainTab: 'day',
       activeProfileId: null,
@@ -175,6 +215,7 @@ export const useAppStore = create<AppState>()(
       profiles: [],
       conversations: [],
       materials: [],
+      journalEntries: [],
       sessionActive: true,
 
       setSidebarCollapsed: (v) => set({ sidebarCollapsed: v }),
@@ -198,6 +239,7 @@ export const useAppStore = create<AppState>()(
           profiles: [...s.profiles, profile],
           activeProfileId: id,
         }))
+        return id
       },
       updateProfile: (id, p) =>
         set((s) => ({
@@ -213,8 +255,49 @@ export const useAppStore = create<AppState>()(
             activeProfileId: nextActive,
             conversations: s.conversations.filter((c) => c.profileId !== id),
             materials: s.materials.filter((m) => m.profileId !== id),
+            journalEntries: s.journalEntries.filter((j) => j.profileId !== id),
           }
         }),
+
+      runDeepBaselineAnalysis: (profileId: string) => {
+        const profile = get().profiles.find((p) => p.id === profileId)
+        if (!profile) return
+        const { json, markdown } = buildBaselineDocuments(profile)
+        const now = new Date().toISOString()
+        set((s) => {
+          const mats = s.materials.filter(
+            (m) =>
+              !(
+                m.profileId === profileId &&
+                (m.kind === 'baseline_json' || m.kind === 'baseline_md')
+              ),
+          )
+          const mJson: Material = {
+            id: newId(),
+            profileId,
+            title: `Baza wiedzy — ${profile.name} (JSON)`,
+            kind: 'baseline_json',
+            mime: 'application/json',
+            content: json,
+            createdAt: now,
+          }
+          const mMd: Material = {
+            id: newId(),
+            profileId,
+            title: `Baza wiedzy — ${profile.name} (Markdown)`,
+            kind: 'baseline_md',
+            mime: 'text/markdown',
+            content: markdown,
+            createdAt: now,
+          }
+          return {
+            materials: [mJson, mMd, ...mats],
+            profiles: s.profiles.map((p) =>
+              p.id === profileId ? { ...p, baselineCompletedAt: now } : p,
+            ),
+          }
+        })
+      },
 
       addConversation: (c) => {
         const id = newId()
@@ -261,6 +344,43 @@ export const useAppStore = create<AppState>()(
       },
       removeMaterial: (id) =>
         set((s) => ({ materials: s.materials.filter((m) => m.id !== id) })),
+
+      generateJournalEntryForDay: (profileId: string, date: string) => {
+        const profile = get().profiles.find((p) => p.id === profileId)
+        if (!profile) return
+        const convs = get().conversations.filter((c) => c.profileId === profileId)
+        const day = parseISO(date)
+        const userSnippets: string[] = []
+        for (const c of convs) {
+          for (const m of c.messages) {
+            if (m.role !== 'user') continue
+            if (!isSameDay(parseISO(m.createdAt), day)) continue
+            userSnippets.push(m.content.slice(0, 200))
+          }
+        }
+        const markdown = buildJournalMarkdown(profile, date, userSnippets)
+        const now = new Date().toISOString()
+        set((s) => {
+          const existing = s.journalEntries.find(
+            (e) => e.profileId === profileId && e.date === date,
+          )
+          const id = existing?.id ?? newId()
+          const createdAt = existing?.createdAt ?? now
+          const entry: JournalEntry = {
+            id,
+            profileId,
+            date,
+            title: `Esencja dnia — ${date}`,
+            markdown,
+            createdAt,
+            updatedAt: now,
+          }
+          const rest = s.journalEntries.filter(
+            (e) => !(e.profileId === profileId && e.date === date),
+          )
+          return { journalEntries: [entry, ...rest] }
+        })
+      },
     }),
     {
       name: 'astroguide-v1',
@@ -269,6 +389,7 @@ export const useAppStore = create<AppState>()(
         profiles: s.profiles,
         conversations: s.conversations,
         materials: s.materials,
+        journalEntries: s.journalEntries,
         activeProfileId: s.activeProfileId,
         dayAnalysisDate: s.dayAnalysisDate,
         sessionActive: s.sessionActive,

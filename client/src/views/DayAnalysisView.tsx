@@ -1,10 +1,12 @@
 import { useAppStore } from '../store/appStore'
 import CosmicAnalysisEngine from '../features/cosmic/CosmicAnalysisEngine.jsx'
+import { DayChartsPanel } from '../components/DayChartsPanel'
 
 export function DayAnalysisView() {
   const dayAnalysisDate = useAppStore((s) => s.dayAnalysisDate)
   const setDayAnalysisDate = useAppStore((s) => s.setDayAnalysisDate)
   const profile = useAppStore((s) => s.profiles.find((p) => p.id === s.activeProfileId))
+  const activeProfileId = useAppStore((s) => s.activeProfileId)
 
   return (
     <div className="pb-28 pt-4">
@@ -14,8 +16,8 @@ export function DayAnalysisView() {
         </p>
         <h1 className="mt-1 font-serif text-2xl font-light text-white">Kosmos w ogniu danych</h1>
         <p className="mt-2 max-w-prose text-sm leading-relaxed text-zinc-400">
-          Silnik referencyjny (tropikalny, syderyczny, harmoniki) + dowolna data kontekstu. Pełne
-          tranzity i spersonalizowany opis wygeneruje model na podstawie profilu i historii.
+          Wykresy dla wybranej daty (placeholder pod tranzyty) oraz mapa referencyjna (LOGOS-44).
+          Pełna personalizacja: model + efemerydy względem karty profilu.
         </p>
         <div className="mt-4 flex flex-wrap items-center gap-3">
           <label className="text-xs font-medium uppercase tracking-wide text-zinc-500">
@@ -34,6 +36,10 @@ export function DayAnalysisView() {
           ) : null}
         </div>
       </header>
+
+      <div className="mt-6">
+        <DayChartsPanel dateStr={dayAnalysisDate} profileId={activeProfileId} />
+      </div>
 
       <div className="mt-6 overflow-hidden rounded-2xl border border-white/[0.06] bg-black/20 shadow-[0_0_0_1px_rgba(255,255,255,0.02)]">
         <div className="border-b border-white/[0.06] bg-gradient-to-r from-[#7c5cff]/10 to-[#d4a853]/10 px-4 py-3 text-center text-xs text-zinc-400">

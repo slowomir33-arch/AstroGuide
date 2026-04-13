@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
+import clsx from 'clsx'
 import { GradientBackdrop } from './components/GradientBackdrop'
 import { Sidebar } from './components/Sidebar'
 import { BottomDock } from './components/BottomDock'
@@ -8,20 +9,14 @@ import { NewProfileModal } from './components/NewProfileModal'
 import { AccountModal } from './components/AccountModal'
 import { JournalModal } from './components/JournalModal'
 import { DayAnalysisView } from './views/DayAnalysisView'
-import { ConversationsView } from './views/ConversationsView'
+import { ChatShellView } from './views/ChatShellView'
 import { MaterialsView } from './views/MaterialsView'
-import { ChatView } from './views/ChatView'
-import {
-  ensureDefaultProfile,
-  ensureStarterConversations,
-  useAppStore,
-} from './store/appStore'
+import { runInitialHydration, useAppStore } from './store/appStore'
 
 export default function App() {
   const mainTab = useAppStore((s) => s.mainTab)
   const session = useAppStore((s) => s.sessionActive)
   const loginDemo = useAppStore((s) => s.loginDemo)
-  const collapsed = useAppStore((s) => s.sidebarCollapsed)
   const setActiveConversation = useAppStore((s) => s.setActiveConversationId)
   const setMainTab = useAppStore((s) => s.setMainTab)
 
@@ -31,13 +26,9 @@ export default function App() {
   const [journalOpen, setJournalOpen] = useState(false)
 
   useEffect(() => {
-    const run = () => {
-      ensureDefaultProfile()
-      ensureStarterConversations()
-    }
-    run()
+    runInitialHydration()
     const done = useAppStore.persist.onFinishHydration(() => {
-      run()
+      runInitialHydration()
     })
     return done
   }, [])
@@ -73,14 +64,24 @@ export default function App() {
       <div className="flex min-h-0 flex-1 overflow-hidden">
         <Sidebar onOpenJournal={() => setJournalOpen(true)} onOpenProfiles={() => setProfilesOpen(true)} />
         <main
-          className="relative min-h-0 min-w-0 flex-1 overflow-y-auto px-4 sm:px-8"
-          style={{ paddingLeft: collapsed ? '0.75rem' : undefined }}
+          className={clsx(
+            'relative min-h-0 min-w-0 flex-1',
+            mainTab === 'conversations'
+              ? 'flex flex-col overflow-hidden px-2 sm:px-4'
+              : 'overflow-y-auto px-4 sm:px-8',
+          )}
         >
-          <div className="mx-auto max-w-3xl">
+          <div
+            className={clsx(
+              'mx-auto w-full pb-28',
+              mainTab === 'conversations'
+                ? 'flex h-full min-h-0 max-w-6xl flex-1 flex-col'
+                : 'max-w-3xl',
+            )}
+          >
             {mainTab === 'day' ? <DayAnalysisView /> : null}
-            {mainTab === 'conversations' ? <ConversationsView /> : null}
+            {mainTab === 'conversations' ? <ChatShellView /> : null}
             {mainTab === 'materials' ? <MaterialsView /> : null}
-            {mainTab === 'chat' ? <ChatView /> : null}
           </div>
         </main>
       </div>
@@ -95,7 +96,7 @@ export default function App() {
         onClose={() => setJournalOpen(false)}
         onGoConversation={(id) => {
           setActiveConversation(id)
-          setMainTab('chat')
+          setMainTab('conversations')
           setJournalOpen(false)
         }}
       />

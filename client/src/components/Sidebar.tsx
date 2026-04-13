@@ -112,7 +112,7 @@ export function Sidebar({ onOpenJournal, onOpenProfiles }: SidebarProps) {
               </div>
               <div className="mt-1 text-sm font-semibold text-white">Podsumowanie dnia</div>
               <div className="mt-0.5 text-[11px] leading-snug text-zinc-400">
-                Rozmowy, materiały, odniesienia między wątkami
+                Wpisy AI na dziś — esencja + Twoje treści
               </div>
             </>
           ) : (
