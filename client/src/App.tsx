@@ -7,6 +7,7 @@ import { BottomDock } from './components/BottomDock'
 import { ProfilePickerModal } from './components/ProfilePickerModal'
 import { NewProfileModal } from './components/NewProfileModal'
 import { AccountModal } from './components/AccountModal'
+import { AdminLlmModal } from './components/AdminLlmModal'
 import { JournalModal } from './components/JournalModal'
 import { DayAnalysisView } from './views/DayAnalysisView'
 import { ChatShellView } from './views/ChatShellView'
@@ -24,6 +25,7 @@ export default function App() {
   const [newProfileOpen, setNewProfileOpen] = useState(false)
   const [accountOpen, setAccountOpen] = useState(false)
   const [journalOpen, setJournalOpen] = useState(false)
+  const [llmAdminOpen, setLlmAdminOpen] = useState(false)
 
   useEffect(() => {
     runInitialHydration()
@@ -90,7 +92,12 @@ export default function App() {
 
       <ProfilePickerModal open={profilesOpen} onClose={() => setProfilesOpen(false)} />
       <NewProfileModal open={newProfileOpen} onClose={() => setNewProfileOpen(false)} />
-      <AccountModal open={accountOpen} onClose={() => setAccountOpen(false)} />
+      <AccountModal
+        open={accountOpen}
+        onClose={() => setAccountOpen(false)}
+        onOpenLlmAdmin={() => setLlmAdminOpen(true)}
+      />
+      <AdminLlmModal open={llmAdminOpen} onClose={() => setLlmAdminOpen(false)} />
       <JournalModal
         open={journalOpen}
         onClose={() => setJournalOpen(false)}

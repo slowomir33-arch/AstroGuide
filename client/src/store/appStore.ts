@@ -69,6 +69,17 @@ export type Account = {
 
 export type MainTab = 'day' | 'conversations' | 'materials'
 
+/** Konfiguracja backendów LLM (klucze tylko lokalnie w przeglądarce). */
+export type LlmProviderId = 'gemini' | 'opus' | 'sonnet'
+
+export type LlmConfig = {
+  geminiKey: string
+  opusKey: string
+  sonnetKey: string
+  /** Zawsze co najwyżej jeden aktywny provider. */
+  activeProvider: LlmProviderId | null
+}
+
 type AppState = {
   sidebarCollapsed: boolean
   mainTab: MainTab
@@ -76,6 +87,7 @@ type AppState = {
   activeConversationId: string | null
   dayAnalysisDate: string
   account: Account
+  llmConfig: LlmConfig
   profiles: Profile[]
   conversations: Conversation[]
   materials: Material[]
@@ -106,6 +118,10 @@ type AppState = {
   removeMaterial: (id: string) => void
 
   generateJournalEntryForDay: (profileId: string, date: string) => void
+
+  setLlmApiKey: (provider: LlmProviderId, key: string) => void
+  /** Ustawia aktywny model; `null` = żaden. Włączenie jednego wyłącza pozostałe. */
+  setLlmActiveProvider: (provider: LlmProviderId | null) => void
 }
 
 const newId = () => crypto.randomUUID()
@@ -114,6 +130,13 @@ const seedAccount: Account = {
   displayName: 'Gość kosmiczny',
   email: 'you@astro.guide',
   plan: 'Nebula',
+}
+
+const seedLlmConfig: LlmConfig = {
+  geminiKey: '',
+  opusKey: '',
+  sonnetKey: '',
+  activeProvider: null,
 }
 
 export function ensureDefaultProfile() {
@@ -212,6 +235,7 @@ export const useAppStore = create<AppState>()(
       activeConversationId: null,
       dayAnalysisDate: new Date().toISOString().slice(0, 10),
       account: seedAccount,
+      llmConfig: seedLlmConfig,
       profiles: [],
       conversations: [],
       materials: [],
@@ -345,6 +369,26 @@ export const useAppStore = create<AppState>()(
       removeMaterial: (id) =>
         set((s) => ({ materials: s.materials.filter((m) => m.id !== id) })),
 
+      setLlmApiKey: (provider, key) =>
+        set((s) => ({
+          llmConfig: {
+            ...s.llmConfig,
+            ...(provider === 'gemini'
+              ? { geminiKey: key }
+              : provider === 'opus'
+                ? { opusKey: key }
+                : { sonnetKey: key }),
+          },
+        })),
+
+      setLlmActiveProvider: (provider) =>
+        set((s) => ({
+          llmConfig: {
+            ...s.llmConfig,
+            activeProvider: provider,
+          },
+        })),
+
       generateJournalEntryForDay: (profileId: string, date: string) => {
         const profile = get().profiles.find((p) => p.id === profileId)
         if (!profile) return
@@ -386,6 +430,7 @@ export const useAppStore = create<AppState>()(
       name: 'astroguide-v1',
       partialize: (s) => ({
         account: s.account,
+        llmConfig: s.llmConfig,
         profiles: s.profiles,
         conversations: s.conversations,
         materials: s.materials,

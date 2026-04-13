@@ -3,9 +3,9 @@ import { Modal } from './Modal'
 import { useAppStore } from '../store/appStore'
 import type { PlanTier } from '../store/appStore'
 
-type Props = { open: boolean; onClose: () => void }
+type Props = { open: boolean; onClose: () => void; onOpenLlmAdmin?: () => void }
 
-export function AccountModal({ open, onClose }: Props) {
+export function AccountModal({ open, onClose, onOpenLlmAdmin }: Props) {
   const account = useAppStore((s) => s.account)
   const updateAccount = useAppStore((s) => s.updateAccount)
   const profiles = useAppStore((s) => s.profiles)
@@ -71,6 +71,22 @@ export function AccountModal({ open, onClose }: Props) {
           ))}
         </ul>
       </section>
+
+      {onOpenLlmAdmin ? (
+        <section className="mt-6">
+          <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-500">Administrator</h3>
+          <button
+            type="button"
+            onClick={() => {
+              onClose()
+              onOpenLlmAdmin()
+            }}
+            className="mt-2 w-full rounded-xl border border-[#7c5cff]/35 bg-[#7c5cff]/10 py-3 text-sm font-semibold text-violet-200 transition hover:border-[#7c5cff]/50 hover:bg-[#7c5cff]/15"
+          >
+            Panel API modeli (LLM)
+          </button>
+        </section>
+      ) : null}
 
       <section className="mt-6 rounded-2xl border border-white/[0.07] bg-black/25 p-4">
         <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-500">Subskrypcja</h3>
