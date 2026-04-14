@@ -1,5 +1,5 @@
 import './CosmicAnalysisView.css'
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { format, getWeek, parseISO } from 'date-fns'
 import { pl } from 'date-fns/locale'
 import { useAppStore } from '../store/appStore'
@@ -41,6 +41,19 @@ function CosmicHeader() {
   const activeProfile = profiles.find((p) => p.id === activeProfileId)
   const [dropdownOpen, setDropdownOpen] = useState(false)
 
+  const profileWrapRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!dropdownOpen) return
+    function handleClickOutside(e: MouseEvent) {
+      if (profileWrapRef.current && !profileWrapRef.current.contains(e.target as Node)) {
+        setDropdownOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [dropdownOpen])
+
   const initials = activeProfile
     ? activeProfile.name.split(' ').map((w) => w[0]).join('').slice(0, 2).toUpperCase()
     : '?'
@@ -48,8 +61,9 @@ function CosmicHeader() {
   return (
     <header className="cosmic-header">
       {/* Profile dropdown */}
-      <div className="cosmic-header__profile-wrap">
+      <div className="cosmic-header__profile-wrap" ref={profileWrapRef}>
         <button
+          type="button"
           className="cosmic-header__profile-btn"
           onClick={() => setDropdownOpen((o) => !o)}
           aria-haspopup="listbox"
@@ -275,6 +289,7 @@ function TalkButton() {
   return (
     <div className="cosmic-talk-wrap">
       <button
+        type="button"
         className="cosmic-talk-btn"
         onClick={() => { /* wired in Slice 5 */ }}
       >
