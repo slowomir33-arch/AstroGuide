@@ -9,7 +9,8 @@ import { NewProfileModal } from './components/NewProfileModal'
 import { AccountModal } from './components/AccountModal'
 import { AdminLlmModal } from './components/AdminLlmModal'
 import { JournalModal } from './components/JournalModal'
-import { DayAnalysisView } from './views/DayAnalysisView'
+import { LandingPage } from './views/LandingPage'
+import { CosmicAnalysisView } from './views/CosmicAnalysisView'
 import { ChatShellView } from './views/ChatShellView'
 import { MaterialsView } from './views/MaterialsView'
 import { runInitialHydration, useAppStore } from './store/appStore'
@@ -17,7 +18,6 @@ import { runInitialHydration, useAppStore } from './store/appStore'
 export default function App() {
   const mainTab = useAppStore((s) => s.mainTab)
   const session = useAppStore((s) => s.sessionActive)
-  const loginDemo = useAppStore((s) => s.loginDemo)
   const setActiveConversation = useAppStore((s) => s.setActiveConversationId)
   const setMainTab = useAppStore((s) => s.setMainTab)
 
@@ -39,26 +39,16 @@ export default function App() {
     <div className="relative flex h-full min-h-0 flex-col bg-[#05040a] text-zinc-100">
       <GradientBackdrop />
 
-      <AnimatePresence>
+      <AnimatePresence mode="wait">
         {!session ? (
           <motion.div
-            key="gate"
+            key="landing"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="absolute inset-0 z-[100] flex flex-col items-center justify-center gap-6 bg-[#05040a]/95 p-8 text-center backdrop-blur-md"
+            exit={{ opacity: 0, transition: { duration: 0.4 } }}
+            className="absolute inset-0 z-[100] overflow-auto"
           >
-            <p className="max-w-sm font-serif text-2xl font-light text-white">Sesja wygasła</p>
-            <p className="max-w-sm text-sm text-zinc-400">
-              Zaloguj się, aby zsynchronizować profile, historię rozmów i embeddingi z modelem.
-            </p>
-            <button
-              type="button"
-              onClick={loginDemo}
-              className="rounded-2xl bg-gradient-to-r from-[#7c5cff] to-[#d4a853] px-8 py-3 text-sm font-bold text-[#0c0a12]"
-            >
-              Kontynuuj (demo)
-            </button>
+            <LandingPage />
           </motion.div>
         ) : null}
       </AnimatePresence>
@@ -70,18 +60,22 @@ export default function App() {
             'relative min-h-0 min-w-0 flex-1',
             mainTab === 'conversations'
               ? 'flex flex-col overflow-hidden px-2 sm:px-4'
-              : 'overflow-y-auto px-4 sm:px-8',
+              : mainTab === 'day'
+                ? 'flex flex-col overflow-hidden'
+                : 'overflow-y-auto px-4 sm:px-8',
           )}
         >
           <div
             className={clsx(
-              'mx-auto w-full pb-28',
+              'mx-auto w-full',
               mainTab === 'conversations'
-                ? 'flex h-full min-h-0 max-w-6xl flex-1 flex-col'
-                : 'max-w-3xl',
+                ? 'flex h-full min-h-0 max-w-6xl flex-1 flex-col pb-28'
+                : mainTab === 'day'
+                  ? 'flex h-full min-h-0 flex-1 flex-col'
+                  : 'max-w-3xl pb-28',
             )}
           >
-            {mainTab === 'day' ? <DayAnalysisView /> : null}
+            {mainTab === 'day' ? <CosmicAnalysisView /> : null}
             {mainTab === 'conversations' ? <ChatShellView /> : null}
             {mainTab === 'materials' ? <MaterialsView /> : null}
           </div>
