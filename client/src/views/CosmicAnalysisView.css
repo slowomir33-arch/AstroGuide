@@ -140,70 +140,20 @@
   border-right: 1px solid rgba(255,255,255,0.06);
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
   position: relative;
   background: radial-gradient(ellipse 70% 70% at 50% 50%, rgba(124,92,255,0.06) 0%, transparent 70%);
   flex-shrink: 0;
+  overflow: hidden;
 }
 
-.cosmic-chart-ring {
-  width: min(280px, 75%);
-  aspect-ratio: 1;
-  border-radius: 50%;
-  border: 1px dashed rgba(255,255,255,0.08);
+/* Flex container for the SVG — fills available space and centers the chart */
+.cosmic-chart-svg-wrap {
+  flex: 1;
+  min-height: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  position: relative;
-}
-.cosmic-chart-ring__mid {
-  width: 72%;
-  aspect-ratio: 1;
-  border-radius: 50%;
-  border: 1px solid rgba(201,168,76,0.15);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.cosmic-chart-ring__inner {
-  width: 52%;
-  aspect-ratio: 1;
-  border-radius: 50%;
-  border: 1px dashed rgba(255,255,255,0.06);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.cosmic-chart-ring__center-label {
-  font-size: 9px;
-  color: rgba(229,221,208,0.3);
-  letter-spacing: 1px;
-  text-align: center;
-  line-height: 1.6;
-}
-
-.cosmic-planet-dot {
-  position: absolute;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  transform: translate(-50%, -50%);
-  animation: cosmic-pulse 3s ease-in-out infinite;
-}
-@keyframes cosmic-pulse {
-  0%, 100% { opacity: 0.9; transform: translate(-50%, -50%) scale(1); }
-  50%       { opacity: 1;   transform: translate(-50%, -50%) scale(1.25); }
-}
-
-.cosmic-chart-caption {
-  position: absolute;
-  bottom: 12px;
-  font-size: 9px;
-  letter-spacing: 1.5px;
-  color: rgba(229,221,208,0.2);
-  text-transform: uppercase;
-  margin: 0;
+  padding: 12px;
 }
 
 /* ── Dashboard panel ────────────────────────────────────── */
@@ -313,7 +263,7 @@
   .cosmic-body { flex-direction: column; }
   .cosmic-chart-panel {
     width: 100%;
-    height: 240px;
+    height: 300px;
     border-right: none;
     border-bottom: 1px solid rgba(255,255,255,0.06);
   }

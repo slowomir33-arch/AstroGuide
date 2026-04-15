@@ -3,6 +3,8 @@ import { useState, useEffect, useRef } from 'react'
 import { format, getWeek, parseISO } from 'date-fns'
 import { pl } from 'date-fns/locale'
 import { useAppStore } from '../store/appStore'
+import { type PlanetName } from '../lib/astro/natal-data'
+import { AstroChart } from '../components/AstroChart/AstroChart'
 
 // ── date helpers ──────────────────────────────────────────
 function formatDisplayDate(dateStr: string): string {
@@ -32,15 +34,14 @@ function getWeekNumber(dateStr: string): number {
 
 // ── CosmicHeader ──────────────────────────────────────────
 function CosmicHeader() {
-  const profiles        = useAppStore((s) => s.profiles)
-  const activeProfileId = useAppStore((s) => s.activeProfileId)
+  const profiles           = useAppStore((s) => s.profiles)
+  const activeProfileId    = useAppStore((s) => s.activeProfileId)
   const setActiveProfileId = useAppStore((s) => s.setActiveProfileId)
   const dayAnalysisDate    = useAppStore((s) => s.dayAnalysisDate)
   const setDayAnalysisDate = useAppStore((s) => s.setDayAnalysisDate)
 
   const activeProfile = profiles.find((p) => p.id === activeProfileId)
   const [dropdownOpen, setDropdownOpen] = useState(false)
-
   const profileWrapRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -60,7 +61,6 @@ function CosmicHeader() {
 
   return (
     <header className="cosmic-header">
-      {/* Profile dropdown */}
       <div className="cosmic-header__profile-wrap" ref={profileWrapRef}>
         <button
           type="button"
@@ -104,7 +104,6 @@ function CosmicHeader() {
         )}
       </div>
 
-      {/* Date picker — visually styled label, hidden native input */}
       <label className="cosmic-header__date-label">
         <span className="cosmic-header__date-icon" aria-hidden="true">📅</span>
         <span className="cosmic-header__date-display">
@@ -119,7 +118,6 @@ function CosmicHeader() {
         />
       </label>
 
-      {/* Week info */}
       <span className="cosmic-header__week-info">
         {getDayName(dayAnalysisDate)} · Tydzień {getWeekNumber(dayAnalysisDate)}
       </span>
@@ -127,45 +125,120 @@ function CosmicHeader() {
   )
 }
 
-// ── Planet dot data ───────────────────────────────────────
-const PLANET_DOTS = [
-  { color: '#F59E0B', label: '☉', top: '10%', left: '62%' },
-  { color: '#C0C9D6', label: '☽', top: '22%', left: '78%' },
-  { color: '#F472B6', label: '♀', top: '55%', left: '94%' },
-  { color: '#EF4444', label: '♂', top: '75%', left: '85%' },
-  { color: '#818CF8', label: '♃', top: '88%', left: '52%' },
-  { color: '#A8A29E', label: '♄', top: '75%', left: '22%' },
-  { color: '#22D3EE', label: '♅', top: '50%', left: '5%'  },
-  { color: '#6EE7B7', label: '☿', top: '28%', left: '12%' },
-] as const
+// ── ChartControls ─────────────────────────────────────────
+// Snap target when ♈ button pressed: 0° Aries at right (0° SVG angle)
+// svgAngle(0°) = (73 + 180 + rotOffset) - 0 = 253 + rotOffset = 0 → rotOffset = -253
+const SNAP_ARIES = -253
+
+type ChartControlsProps = {
+  rotOffset: number
+  onSnap: (deg: number) => void
+  showHouses: boolean
+  onToggleHouses: () => void
+  showAspects: boolean
+  onToggleAspects: () => void
+  showLabels: boolean
+  onToggleLabels: () => void
+}
+
+function ChartControls({
+  rotOffset,
+  onSnap,
+  showHouses,
+  onToggleHouses,
+  showAspects,
+  onToggleAspects,
+  showLabels,
+  onToggleLabels,
+}: ChartControlsProps) {
+  return (
+    <div className="chart-controls">
+      <div className="chart-controls__row">
+        <button type="button" className="chart-btn" onClick={() => onSnap(0)}>
+          AC · MC
+        </button>
+        <button type="button" className="chart-btn" onClick={() => onSnap(SNAP_ARIES)}>
+          ♈
+        </button>
+        <button type="button" className="chart-btn" onClick={() => onSnap(0)}>
+          ↺ {Math.round(rotOffset)}°
+        </button>
+      </div>
+      <div className="chart-controls__row">
+        <button
+          type="button"
+          className={`chart-btn${showHouses ? ' chart-btn--active' : ''}`}
+          onClick={onToggleHouses}
+        >
+          ♁ Domy
+        </button>
+        <button
+          type="button"
+          className={`chart-btn${showAspects ? ' chart-btn--active' : ''}`}
+          onClick={onToggleAspects}
+        >
+          ⋆ Aspekty
+        </button>
+        <button
+          type="button"
+          className={`chart-btn${showLabels ? ' chart-btn--active' : ''}`}
+          onClick={onToggleLabels}
+        >
+          Aa Etykiety
+        </button>
+      </div>
+    </div>
+  )
+}
 
 // ── ChartPanel ────────────────────────────────────────────
-function ChartPanel() {
+// Defined outside CosmicAnalysisView to keep React identity stable.
+// State lives in CosmicAnalysisView so future slices can read selectedPlanet.
+type ChartPanelProps = {
+  rotOffset: number
+  onRotOffsetChange: (n: number) => void
+  selectedPlanet: PlanetName | null
+  onPlanetClick: (p: PlanetName | null) => void
+  showHouses: boolean
+  onToggleHouses: () => void
+  showAspects: boolean
+  onToggleAspects: () => void
+  showLabels: boolean
+  onToggleLabels: () => void
+}
+
+function ChartPanel({
+  rotOffset,
+  onRotOffsetChange,
+  selectedPlanet,
+  onPlanetClick,
+  showHouses,
+  onToggleHouses,
+  showAspects,
+  onToggleAspects,
+  showLabels,
+  onToggleLabels,
+}: ChartPanelProps) {
   return (
     <div className="cosmic-chart-panel">
-      <div className="cosmic-chart-ring">
-        {PLANET_DOTS.map((dot) => (
-          <span
-            key={dot.label}
-            className="cosmic-planet-dot"
-            style={{
-              top: dot.top,
-              left: dot.left,
-              background: dot.color,
-              boxShadow: `0 0 6px ${dot.color}`,
-            }}
-            aria-label={dot.label}
-          />
-        ))}
-        <div className="cosmic-chart-ring__mid">
-          <div className="cosmic-chart-ring__inner">
-            <span className="cosmic-chart-ring__center-label">
-              ASTRO<br />CHART
-            </span>
-          </div>
-        </div>
+      <div className="cosmic-chart-svg-wrap">
+        <AstroChart
+          rotOffset={rotOffset}
+          onRotOffsetChange={onRotOffsetChange}
+          showHouses={showHouses}
+          showAspects={showAspects}
+          showLabels={showLabels}
+          selectedPlanet={selectedPlanet}
+          onPlanetClick={onPlanetClick}
+        />
       </div>
-      <p className="cosmic-chart-caption">interaktywne · obracalne · klik = detail</p>
+      <ChartControls
+        rotOffset={rotOffset}
+        onSnap={onRotOffsetChange}
+        showHouses={showHouses}   onToggleHouses={onToggleHouses}
+        showAspects={showAspects} onToggleAspects={onToggleAspects}
+        showLabels={showLabels}   onToggleLabels={onToggleLabels}
+      />
     </div>
   )
 }
@@ -303,11 +376,29 @@ function TalkButton() {
 export function CosmicAnalysisView() {
   const dayAnalysisDate = useAppStore((s) => s.dayAnalysisDate)
 
+  // Chart state lives here so Slice 3+ can read selectedPlanet
+  const [rotOffset,      setRotOffset]      = useState(0)
+  const [selectedPlanet, setSelectedPlanet] = useState<PlanetName | null>(null)
+  const [showHouses,     setShowHouses]     = useState(true)
+  const [showAspects,    setShowAspects]    = useState(true)
+  const [showLabels,     setShowLabels]     = useState(true)
+
   return (
     <div className="cosmic-root">
       <CosmicHeader />
       <div className="cosmic-body">
-        <ChartPanel />
+        <ChartPanel
+          rotOffset={rotOffset}
+          onRotOffsetChange={setRotOffset}
+          selectedPlanet={selectedPlanet}
+          onPlanetClick={setSelectedPlanet}
+          showHouses={showHouses}
+          onToggleHouses={() => setShowHouses(v => !v)}
+          showAspects={showAspects}
+          onToggleAspects={() => setShowAspects(v => !v)}
+          showLabels={showLabels}
+          onToggleLabels={() => setShowLabels(v => !v)}
+        />
         <DashboardPanel dateStr={dayAnalysisDate} />
       </div>
       <TalkButton />
