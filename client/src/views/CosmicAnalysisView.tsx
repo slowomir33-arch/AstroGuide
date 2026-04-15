@@ -56,7 +56,7 @@ function CosmicHeader() {
   }, [dropdownOpen])
 
   const initials = activeProfile
-    ? activeProfile.name.split(' ').map((w) => w[0]).join('').slice(0, 2).toUpperCase()
+    ? activeProfile.name.split(' ').map((w) => w[0] ?? '').join('').slice(0, 2).toUpperCase()
     : '?'
 
   return (
@@ -126,8 +126,15 @@ function CosmicHeader() {
 }
 
 // ── ChartControls ─────────────────────────────────────────
-// Snap target when ♈ button pressed: 0° Aries at right (0° SVG angle)
-// svgAngle(0°) = (73 + 180 + rotOffset) - 0 = 253 + rotOffset = 0 → rotOffset = -253
+// SNAP_AC = 0: at rotOffset=0 the Ascendant (LOGOS-44 Asc = 73°) is already at left
+// (9 o'clock) and MC is at top (12 o'clock) — that IS the default view.
+// The AC·MC button and the ↺ reset button both target 0 intentionally;
+// they diverge if a future slice allows switching profiles with a different Asc.
+
+// SNAP_ARIES = -253: places 0° Aries at right (0° SVG angle).
+// Derived from LOGOS-44 Asc = 73°:
+//   svgAngle(0°) = (73 + 180 + rotOffset) - 0 = 253 + rotOffset = 0 → rotOffset = -253
+// Update this constant if Asc changes (e.g., multi-profile support in Slice 4+).
 const SNAP_ARIES = -253
 
 type ChartControlsProps = {
