@@ -79,6 +79,7 @@ export function AstroChart({
   }
 
   function endDrag() {
+    if (!isDraggingRef.current) return
     isDraggingRef.current = false
     wrapRef.current?.removeAttribute('data-dragging')
   }
