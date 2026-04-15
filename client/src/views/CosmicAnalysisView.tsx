@@ -131,11 +131,12 @@ function CosmicHeader() {
 // The AC·MC button and the ↺ reset button both target 0 intentionally;
 // they diverge if a future slice allows switching profiles with a different Asc.
 
-// SNAP_ARIES = -253: places 0° Aries at right (0° SVG angle).
+// SNAP_ARIES = 107: places 0° Aries at right (0° SVG angle).
 // Derived from LOGOS-44 Asc = 73°:
-//   svgAngle(0°) = (73 + 180 + rotOffset) - 0 = 253 + rotOffset = 0 → rotOffset = -253
+//   svgAngle(0°) = (73 + 180 + rotOffset) - 0 = 253 + rotOffset = 0 → rotOffset = -253 ≡ 107 mod 360
+// AstroChart normalizes rotOffset to [0, 360), so 107 is the canonical value.
 // Update this constant if Asc changes (e.g., multi-profile support in Slice 4+).
-const SNAP_ARIES = -253
+const SNAP_ARIES = 107
 
 type ChartControlsProps = {
   rotOffset: number

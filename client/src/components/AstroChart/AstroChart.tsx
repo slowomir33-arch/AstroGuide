@@ -75,7 +75,8 @@ export function AstroChart({
   function handlePointerMove(e: React.PointerEvent<SVGSVGElement>) {
     if (!isDraggingRef.current) return
     draggedRef.current = true
-    onRotOffsetChange?.(startOffsetRef.current + getSVGAngle(e) - startAngleRef.current)
+    const raw = startOffsetRef.current + getSVGAngle(e) - startAngleRef.current
+    onRotOffsetChange?.(((raw % 360) + 360) % 360) // normalize to [0, 360)
   }
 
   function endDrag() {
