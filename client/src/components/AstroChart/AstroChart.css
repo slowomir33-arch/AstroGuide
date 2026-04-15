@@ -1,0 +1,62 @@
+/* AstroChart.css */
+
+/* ── Chart wrapper ──────────────────────────────────────── */
+.astro-chart-wrap {
+  width: 100%;
+  aspect-ratio: 1;
+  max-width: 400px;
+  cursor: grab;
+  user-select: none;
+  touch-action: none; /* prevent scroll during touch-drag */
+}
+.astro-chart-wrap:active { cursor: grabbing; }
+
+.astro-chart-svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+/* ── Rotating group — CSS transition for snap animation ─ */
+.astro-chart-rotating {
+  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+/* Disable transition while dragging (data-dragging attr set imperatively) */
+.astro-chart-wrap[data-dragging] .astro-chart-rotating {
+  transition: none;
+}
+
+/* ── Chart controls ──────────────────────────────────────── */
+.chart-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px 12px 4px;
+  flex-shrink: 0;
+}
+.chart-controls__row {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+}
+.chart-btn {
+  padding: 3px 10px;
+  border-radius: 6px;
+  font-size: 10px;
+  letter-spacing: 1px;
+  border: 1px solid rgba(255,255,255,0.10);
+  background: rgba(255,255,255,0.03);
+  color: rgba(229,221,208,0.5);
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+  font-family: 'Outfit', sans-serif;
+}
+.chart-btn:hover {
+  border-color: rgba(255,255,255,0.20);
+  color: rgba(229,221,208,0.8);
+}
+.chart-btn--active {
+  border-color: rgba(201,168,76,0.45);
+  color: #C9A84C;
+  background: rgba(201,168,76,0.08);
+}
