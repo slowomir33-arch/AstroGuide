@@ -1,5 +1,5 @@
 import './AstroChart.css'
-import { useRef } from 'react'
+import { useRef, useId } from 'react'
 import {
   type PlanetName,
   type AngleName,
@@ -46,6 +46,9 @@ export function AstroChart({
   const rHouseLabel  = 0.56 * R
   const rAspect      = 0.34 * R
   const rCenter      = 0.04 * R
+
+  const uid    = useId().replace(/:/g, '_')
+  const glowId = `planetGlow_${uid}`
 
   const wrapRef        = useRef<HTMLDivElement>(null)
   const isDraggingRef  = useRef(false)
@@ -125,7 +128,7 @@ export function AstroChart({
         onClick={handleSVGClick}
       >
         <defs>
-          <filter id="planetGlow">
+          <filter id={glowId}>
             <feGaussianBlur stdDeviation="3" result="blur" />
             <feMerge>
               <feMergeNode in="blur" />
@@ -279,7 +282,7 @@ export function AstroChart({
                   fill={planet.color}
                   stroke="#060A14"
                   strokeWidth={1.5}
-                  filter={isSelected ? 'url(#planetGlow)' : undefined}
+                  filter={isSelected ? `url(#${glowId})` : undefined}
                 />
                 {showLabels && (
                   <text
