@@ -66,7 +66,7 @@ export const ANGLES: Record<AngleName, { deg: number; symbol: string; color: str
 }
 
 // Placidus house cusps (12 values, index 0 = cusp of house 1 = Asc)
-export const HOUSES: number[] = [73, 97, 124, 163, 195, 225, 253, 277, 304, 343, 15, 45]
+export const HOUSES: readonly number[] = [73, 97, 124, 163, 195, 225, 253, 277, 304, 343, 15, 45]
 
 export const ASPECTS: AspectDef[] = [
   { name: 'Koniunkcja',        angle: 0,   orb: 8, sym: '☌',  w: 10, col: '#F59E0B', nature: 'fuzja'     },
@@ -82,7 +82,7 @@ export const ASPECTS: AspectDef[] = [
   { name: 'Bi-kwintyl',        angle: 144, orb: 2, sym: 'bQ', w: 3,  col: '#7C3AED', nature: 'twórczy'   },
 ]
 
-export const SIGNS_SYM: string[] =
+export const SIGNS_SYM: readonly string[] =
   ['♈','♉','♊','♋','♌','♍','♎','♏','♐','♑','♒','♓']
 
 // Element for each zodiac sign (index 0 = Aries)
@@ -94,7 +94,7 @@ export const ELEMENT_COLORS: Record<string, string> = {
   Fire:  'rgba(239,68,68,0.15)',
   Earth: 'rgba(132,204,22,0.15)',
   Air:   'rgba(56,189,248,0.15)',
-  Water: 'rgba(129,140,148,0.15)',
+  Water: 'rgba(129,140,248,0.15)',
 }
 
 // ── Pure functions ───────────────────────────────────────────
@@ -107,8 +107,12 @@ export function mod360(d: number): number {
  * Returns SVG angle (degrees) for an ecliptic longitude.
  * At rotOffset=0: Asc at 180° (9 o'clock), MC at 270° (12 o'clock).
  */
-export function degToSVGAngle(eclipticDeg: number, rotOffset: number): number {
-  return mod360((ANGLES.Asc.deg + 180 + rotOffset) - eclipticDeg)
+export function degToSVGAngle(
+  eclipticDeg: number,
+  rotOffset: number,
+  ascDeg = ANGLES.Asc.deg,
+): number {
+  return mod360((ascDeg + 180 + rotOffset) - eclipticDeg)
 }
 
 /** Polar→Cartesian in SVG space (y-axis down, angles clockwise from right). */
@@ -135,6 +139,7 @@ export function findAspects(
   positions: Partial<Record<PlanetName, number>>,
   orbMult = 1,
 ): FoundAspect[] {
+  if (orbMult <= 0) return []
   const found: FoundAspect[] = []
   const names = Object.keys(positions) as PlanetName[]
   for (let i = 0; i < names.length; i++) {
