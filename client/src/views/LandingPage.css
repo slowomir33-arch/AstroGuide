@@ -1,0 +1,236 @@
+/* ── Root ─────────────────────────────────────────────────────── */
+.lp-root {
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: linear-gradient(180deg, #06090F 0%, #0C1220 30%, #0E1528 60%, #06090F 100%);
+  font-family: 'Outfit', sans-serif;
+  color: #E5DDD0;
+}
+
+/* Override Tailwind's font-display inside landing page */
+.lp-root .lp-display {
+  font-family: 'Cormorant Garamond', serif;
+}
+
+/* ── Background effects ───────────────────────────────────────── */
+.lp-nebula-1 {
+  position: fixed;
+  top: -20%;
+  left: -10%;
+  width: 60%;
+  height: 60%;
+  background: radial-gradient(ellipse, rgba(26,39,68,0.5) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+  animation: lp-nd 28s ease-in-out infinite;
+}
+
+.lp-nebula-2 {
+  position: fixed;
+  bottom: -10%;
+  right: -15%;
+  width: 50%;
+  height: 50%;
+  background: radial-gradient(ellipse, rgba(201,168,76,0.12) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+  animation: lp-ndr 32s ease-in-out infinite;
+}
+
+@keyframes lp-nd {
+  0%   { transform: translate(0, 0); }
+  50%  { transform: translate(20px, -50px); }
+  100% { transform: translate(0, 0); }
+}
+
+@keyframes lp-ndr {
+  0%   { transform: translate(0, 0); }
+  50%  { transform: translate(-70px, 20px); }
+  100% { transform: translate(0, 0); }
+}
+
+/* ── Diamond animations ───────────────────────────────────────── */
+@keyframes lp-slowRotate {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+.lp-diamond-rotate {
+  animation: lp-slowRotate 30s linear infinite;
+}
+
+@keyframes lp-float {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-15px); }
+}
+
+.lp-float {
+  animation: lp-float 6s ease-in-out infinite;
+}
+
+@keyframes lp-glow-pulse {
+  0%, 100% { box-shadow: 0 0 30px rgba(201,168,76,0.5), 0 0 60px rgba(201,168,76,0.2); }
+  50%       { box-shadow: 0 0 60px rgba(201,168,76,0.8), 0 0 120px rgba(201,168,76,0.4); }
+}
+
+.lp-glow-intense {
+  animation: lp-glow-pulse 3.5s ease-in-out infinite;
+}
+
+/* ── Star particles ───────────────────────────────────────────── */
+.lp-star {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  background: rgba(229,221,208,0.6);
+  border-radius: 50%;
+  animation: lp-twinkle 3.5s ease-in-out infinite;
+}
+
+@keyframes lp-twinkle {
+  0%, 100% { opacity: 0.1; }
+  50%       { opacity: 1; }
+}
+
+/* ── Glass cards ──────────────────────────────────────────────── */
+.lp-glass {
+  background: rgba(255,255,255,0.05);
+  backdrop-filter: blur(30px);
+  border: 1px solid rgba(255,255,255,0.12);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.08);
+  position: relative;
+}
+
+.lp-glass::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+}
+
+/* ── CTA button ───────────────────────────────────────────────── */
+.lp-cta {
+  background: linear-gradient(135deg, rgba(201,168,76,0.25), rgba(201,168,76,0.1));
+  border: 1.5px solid rgba(201,168,76,0.6);
+  box-shadow: 0 0 40px rgba(201,168,76,0.35), 0 0 80px rgba(201,168,76,0.15), inset 0 1px 0 rgba(255,255,255,0.3);
+  transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  cursor: pointer;
+  color: #C9A84C;
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.75rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  border-radius: 9999px;
+}
+
+.lp-cta:hover {
+  box-shadow: 0 0 60px rgba(201,168,76,0.6), 0 0 120px rgba(201,168,76,0.3);
+  border-color: rgba(201,168,76,0.9);
+  transform: translateY(-3px);
+  color: #E8C65A;
+}
+
+/* ── Text gradient ────────────────────────────────────────────── */
+.lp-text-gold {
+  background: linear-gradient(135deg, #C9A84C, #E8C65A, #C9A84C);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ── Divider ──────────────────────────────────────────────────── */
+.lp-divider {
+  width: 60px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #C9A84C, transparent);
+}
+
+/* ── Pricing highlight ────────────────────────────────────────── */
+.lp-pricing-highlight {
+  background: linear-gradient(180deg, rgba(201,168,76,0.08) 0%, rgba(201,168,76,0.02) 100%);
+  border: 1px solid rgba(201,168,76,0.25);
+}
+
+/* ── Scroll reveal ────────────────────────────────────────────── */
+.lp-reveal {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.lp-reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ── Resonance canvas ─────────────────────────────────────────── */
+.lp-resonance-wrap {
+  position: relative;
+  width: 100vw;
+  margin-left: calc(-50vw + 50%);
+  height: 440px;
+  overflow: hidden;
+}
+
+.lp-resonance-wrap canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.lp-resonance-legend {
+  position: absolute;
+  bottom: 28px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2;
+  text-align: center;
+  pointer-events: none;
+}
+
+.lp-legend-name {
+  font-family: 'Outfit', sans-serif;
+  font-size: 10px;
+  font-weight: 400;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  transition: color 0.8s ease, opacity 0.8s ease;
+}
+
+.lp-legend-sub {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 12px;
+  font-weight: 300;
+  font-style: italic;
+  color: rgba(229,221,208,0.25);
+  margin-top: 3px;
+}
+
+/* ── Chart decorations ────────────────────────────────────────── */
+.lp-chart-ring   { fill: none; stroke: rgba(201,168,76,0.15); }
+.lp-chart-ring-2 { fill: none; stroke: rgba(201,168,76,0.08); }
+.lp-chart-line   { stroke: rgba(201,168,76,0.1); }
+.lp-chart-dot    { fill: rgba(201,168,76,0.5); }
+
+/* ── Secondary CTA (free tier) ────────────────────────────────── */
+.lp-cta-secondary {
+  border: 1px solid rgba(229,221,208,0.1);
+  color: rgba(229,221,208,0.5);
+  background: transparent;
+  cursor: pointer;
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.75rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  border-radius: 9999px;
+  transition: all 0.3s ease;
+  width: 100%;
+  padding: 0.75rem 0;
+}
+
+.lp-cta-secondary:hover {
+  border-color: rgba(229,221,208,0.2);
+  color: rgba(229,221,208,0.7);
+}
